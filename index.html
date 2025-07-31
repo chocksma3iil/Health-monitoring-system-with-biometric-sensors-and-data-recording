@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Santé IoT</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f0f0f0;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .status {
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 5px;
+      background-color: #e9ecef;
+      font-weight: bold;
+    }
+    .data-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .data-card {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      border-left: 4px solid #007bff;
+    }
+    .data-label {
+      font-weight: bold;
+      color: #666;
+      margin-bottom: 10px;
+    }
+    .data-value {
+      font-size: 1.5em;
+      color: #333;
+      font-weight: bold;
+    }
+    .alert {
+      background-color: #f8d7da;
+      color: #721c24;
+      border-left-color: #dc3545;
+    }
+    .normal {
+      background-color: #d4edda;
+      color: #155724;
+      border-left-color: #28a745;
+    }
+    
+    /* Threshold Control Section */
+    .threshold-section {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 4px solid #ffc107;
+    }
+    .threshold-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 15px;
+    }
+    .threshold-group {
+      background: white;
+      padding: 15px;
+      border-radius: 5px;
+      border: 1px solid #dee2e6;
+    }
+    .threshold-group h4 {
+      margin-top: 0;
+      color: #495057;
+    }
+    .input-group {
+      margin-bottom: 10px;
+    }
+    .input-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #666;
+    }
+    .input-group input {
+      width: 80px;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .btn {
+      background-color: #007bff;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+    .btn:hover {
+      background-color: #0056b3;
+    }
+    .btn-warning {
+      background-color: #ffc107;
+      color: #212529;
+    }
+    .btn-warning:hover {
+      background-color: #e0a800;
+    }
+    .current-thresholds {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    .threshold-display {
+      background: white;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #dee2e6;
+      text-align: center;
+    }
+    .threshold-display .label {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 5px;
+    }
+    .threshold-display .value {
+      font-size: 16px;
+      font-weight: bold;
+      color: #333;
+    }
+    
+    .debug {
+      margin-top: 30px;
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-radius: 5px;
+      font-family: monospace;
+      font-size: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #dee2e6;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🏥 Dashboard Santé IoT</h1>
+    
+    <div class="status">
+      <span>📡 Connexion WebSocket: </span>
+      <span id="wsStatus" style="color: orange;">Connexion en cours...</span>
+    </div>
+
+    <!-- Threshold Control Section -->
+    <div class="threshold-section">
+      <h3>⚙️ Contrôle des Seuils</h3>
+      <div class="current-thresholds">
+        <div class="threshold-display">
+          <div class="label">Température Min</div>
+          <div class="value" id="currentTempMin">35.0°C</div>
+        </div>
+        <div class="threshold-display">
+          <div class="label">Température Max</div>
+          <div class="value" id="currentTempMax">38.0°C</div>
+        </div>
+        <div class="threshold-display">
+          <div class="label">Chute Min</div>
+          <div class="value" id="currentChuteMin">5.0</div>
+        </div>
+        <div class="threshold-display">
+          <div class="label">Chute Max</div>
+          <div class="value" id="currentChuteMax">15.0</div>
+        </div>
+      </div>
+      
+      <div class="threshold-controls">
+        <div class="threshold-group">
+          <h4>🌡️ Seuils Température</h4>
+          <div class="input-group">
+            <label for="tempMin">Minimum (°C):</label>
+            <input type="number" id="tempMin" value="35.0" step="0.1" min="30" max="40">
+          </div>
+          <div class="input-group">
+            <label for="tempMax">Maximum (°C):</label>
+            <input type="number" id="tempMax" value="38.0" step="0.1" min="35" max="45">
+          </div>
+          <button class="btn btn-warning" onclick="updateTempThresholds()">
+            📤 Mettre à jour Température
+          </button>
+        </div>
+        
+        <div class="threshold-group">
+          <h4>📈 Seuils Chute (AccZ)</h4>
+          <div class="input-group">
+            <label for="chuteMin">Minimum:</label>
+            <input type="number" id="chuteMin" value="5.0" step="0.5" min="0" max="20">
+          </div>
+          <div class="input-group">
+            <label for="chuteMax">Maximum:</label>
+            <input type="number" id="chuteMax" value="15.0" step="0.5" min="10" max="30">
+          </div>
+          <button class="btn btn-warning" onclick="updateChuteThresholds()">
+            📤 Mettre à jour Chute
+          </button>
+        </div>
+      </div>
+      
+      <div style="text-align: center; margin-top: 15px;">
+        <button class="btn" onclick="resetThresholds()">
+          🔄 Réinitialiser Seuils
+        </button>
+      </div>
+    </div>
+
+    <div class="data-grid">
+      <div class="data-card">
+        <div class="data-label">🌡️ Température corporelle</div>
+        <div class="data-value"><span id="tempCorp">--</span> °C</div>
+      </div>
+      
+      <div class="data-card">
+        <div class="data-label">🌡️ Température ambiante</div>
+        <div class="data-value"><span id="tempAmb">--</span> °C</div>
+      </div>
+      
+      <div class="data-card">
+        <div class="data-label">📈 Accélération X</div>
+        <div class="data-value"><span id="accX">--</span> m/s²</div>
+      </div>
+      
+      <div class="data-card">
+        <div class="data-label">📈 Accélération Y</div>
+        <div class="data-value"><span id="accY">--</span> m/s²</div>
+      </div>
+      
+      <div class="data-card">
+        <div class="data-label">📈 Accélération Z</div>
+        <div class="data-value"><span id="accZ">--</span> m/s²</div>
+      </div>
+      
+      <div class="data-card normal" id="alert">
+        <div class="data-label">⚡ État du système</div>
+        <div class="data-value">En attente...</div>
+      </div>
+    </div>
+
+    <div class="debug">
+      <strong>📊 Debug Log:</strong>
+      <div id="debugLog">Initialisation...</div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    let messageCount = 0;
+
+    // Éléments du DOM
+    const wsStatus = document.getElementById('wsStatus');
+    const tempCorp = document.getElementById('tempCorp');
+    const tempAmb = document.getElementById('tempAmb');
+    const accX = document.getElementById('accX');
+    const accY = document.getElementById('accY');
+    const accZ = document.getElementById('accZ');
+    const alertEl = document.getElementById('alert');
+    const debugLog = document.getElementById('debugLog');
+
+    // Threshold display elements
+    const currentTempMin = document.getElementById('currentTempMin');
+    const currentTempMax = document.getElementById('currentTempMax');
+    const currentChuteMin = document.getElementById('currentChuteMin');
+    const currentChuteMax = document.getElementById('currentChuteMax');
+
+    // Current thresholds
+    let thresholds = {
+      tempMin: 35.0,
+      tempMax: 38.0,
+      chuteMin: 5.0,
+      chuteMax: 15.0
+    };
+
+    function addLog(message) {
+      const time = new Date().toLocaleTimeString();
+      debugLog.innerHTML += `<br>[${time}] ${message}`;
+      debugLog.scrollTop = debugLog.scrollHeight;
+    }
+
+    function updateThresholdDisplay() {
+      currentTempMin.textContent = thresholds.tempMin.toFixed(1) + '°C';
+      currentTempMax.textContent = thresholds.tempMax.toFixed(1) + '°C';
+      currentChuteMin.textContent = thresholds.chuteMin.toFixed(1);
+      currentChuteMax.textContent = thresholds.chuteMax.toFixed(1);
+    }
+
+    function updateTempThresholds() {
+      const tempMin = parseFloat(document.getElementById('tempMin').value);
+      const tempMax = parseFloat(document.getElementById('tempMax').value);
+      
+      if (tempMin >= tempMax) {
+        alert('Erreur: Température min doit être inférieure à température max');
+        return;
+      }
+      
+      thresholds.tempMin = tempMin;
+      thresholds.tempMax = tempMax;
+      
+      socket.emit('updateThresholds', {
+        type: 'temperature',
+        tempMin: tempMin,
+        tempMax: tempMax
+      });
+      
+      updateThresholdDisplay();
+      addLog(`🌡️ Seuils température mis à jour: ${tempMin}°C - ${tempMax}°C`);
+    }
+
+    function updateChuteThresholds() {
+      const chuteMin = parseFloat(document.getElementById('chuteMin').value);
+      const chuteMax = parseFloat(document.getElementById('chuteMax').value);
+      
+      if (chuteMin >= chuteMax) {
+        alert('Erreur: Chute min doit être inférieure à chute max');
+        return;
+      }
+      
+      thresholds.chuteMin = chuteMin;
+      thresholds.chuteMax = chuteMax;
+      
+      socket.emit('updateThresholds', {
+        type: 'chute',
+        chuteMin: chuteMin,
+        chuteMax: chuteMax
+      });
+      
+      updateThresholdDisplay();
+      addLog(`📈 Seuils chute mis à jour: ${chuteMin} - ${chuteMax}`);
+    }
+
+    function resetThresholds() {
+      thresholds = {
+        tempMin: 35.0,
+        tempMax: 38.0,
+        chuteMin: 5.0,
+        chuteMax: 15.0
+      };
+      
+      document.getElementById('tempMin').value = thresholds.tempMin;
+      document.getElementById('tempMax').value = thresholds.tempMax;
+      document.getElementById('chuteMin').value = thresholds.chuteMin;
+      document.getElementById('chuteMax').value = thresholds.chuteMax;
+      
+      socket.emit('updateThresholds', {
+        type: 'reset',
+        ...thresholds
+      });
+      
+      updateThresholdDisplay();
+      addLog('🔄 Seuils réinitialisés aux valeurs par défaut');
+    }
+
+    // Événements WebSocket
+    socket.on('connect', () => {
+      wsStatus.textContent = 'Connecté ✅';
+      wsStatus.style.color = 'green';
+      addLog('✅ WebSocket connecté');
+    });
+
+    socket.on('disconnect', () => {
+      wsStatus.textContent = 'Déconnecté ❌';
+      wsStatus.style.color = 'red';
+      addLog('❌ WebSocket déconnecté');
+    });
+
+    socket.on('updateData', (data) => {
+      messageCount++;
+      addLog(`📨 Message #${messageCount}: ${JSON.stringify(data)}`);
+      
+      // Mettre à jour les valeurs
+      tempCorp.textContent = data.tempCorp.toFixed(1);
+      tempAmb.textContent = data.tempAmb.toFixed(1);
+      accX.textContent = data.accX.toFixed(2);
+      accY.textContent = data.accY.toFixed(2);
+      accZ.textContent = data.accZ.toFixed(2);
+
+      // Gestion des alertes avec seuils dynamiques
+      if (data.tempCorp > thresholds.tempMax) {
+        alertEl.className = 'data-card alert';
+        alertEl.querySelector('.data-value').textContent = '🚨 Température élevée!';
+        addLog('🚨 ALERTE: Température élevée!');
+      } else if (data.tempCorp < thresholds.tempMin) {
+        alertEl.className = 'data-card alert';
+        alertEl.querySelector('.data-value').textContent = '❄️ Température basse!';
+        addLog('❄️ ALERTE: Température basse!');
+      } else {
+        alertEl.className = 'data-card normal';
+        alertEl.querySelector('.data-value').textContent = '✅ Normal';
+      }
+    });
+
+    socket.on('thresholdUpdated', (data) => {
+      thresholds = { ...thresholds, ...data };
+      updateThresholdDisplay();
+      addLog(`⚙️ Seuils mis à jour depuis ESP32: ${JSON.stringify(data)}`);
+    });
+
+    addLog('🚀 Interface chargée, tentative de connexion...');
+    updateThresholdDisplay();
+  </script>
+</body>
+</html>
