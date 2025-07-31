@@ -1,8 +1,8 @@
 # Health-monitoring-system-with-biometric-sensors-and-data-recording
-IoT Health Monitoring System – A real-time health tracking system using ESP32 sensors, Raspberry Pi, and a web dashboard. It monitors body temperature, motion (falls), and ambient conditions, sending alerts and storing data for remote access and analysis.
+IoT Health Monitoring System – A real-time health tracking system using ESP32 sensors and a web dashboard. It monitors body temperature, motion (falls), and ambient conditions, sending alerts and storing data for remote access and analysis.
  # 🩺 IoT Health Monitoring System
 
-A real-time health monitoring system using biometric sensors, ESP32 microcontrollers, a Raspberry Pi, and a web dashboard. The system collects biometric data (temperature, motion, ambient conditions), analyzes it, stores it remotely, and displays health status using an LCD and RGB LED.
+A real-time health monitoring system using biometric sensors, ESP32 microcontrollers, and a web dashboard. The system collects biometric data (temperature, motion, ambient conditions), analyzes it, stores it remotely, and displays health status using an LCD and RGB LED.
 
 ---
 
@@ -11,7 +11,7 @@ A real-time health monitoring system using biometric sensors, ESP32 microcontrol
 This project is designed to:
 - Monitor a user's health in real time
 - Detect anomalies such as high body temperature or falls
-- Display information locally (LCD, LED, 7-segment display)
+- Display information locally (LCD, LED )
 - Store and analyze data remotely via a server and database
 - Provide a web interface for live data visualization and manual control
 
@@ -51,16 +51,13 @@ This project is designed to:
    - Sends data via MQTT to the Raspberry Pi  
    - Displays current health status on LCD and RGB LED  
 
-2. **Processing (Raspberry Pi)**  
-   - Acts as a central bridge between ESP32 nodes and the server  
-   - Forwards sensor data to the remote server using HTTP  
-   - Detects critical health events (e.g. fall, fever) and triggers alerts  
 
-3. **Storage (Server)**  
+
+2. **Storage (Server)**  
    - Receives data via REST API  
    - Stores data in MySQL or Firebase for analysis and historical access  
 
-4. **Web Dashboard**  
+3. **Web Dashboard**  
    - Displays live sensor data using real-time charts  
    - Allows users to adjust thresholds and control actuators (LED, display) remotely  
    - Provides access to health reports and system status
@@ -77,12 +74,13 @@ This project is designed to:
 
 ## 🛠 Technologies Used
 
-| Component        | Technology                        |
+| Component        | Technology                         |
 |------------------|------------------------------------|
 | ESP32            | Arduino / MQTT                     |
-| Raspberry Pi     | Python / Node.js / Mosquitto       |
 | Backend Server   | REST API / MySQL or Firebase       |
 | Frontend         | HTML / CSS / JavaScript / Chart.js |
 | Communication    | MQTT and HTTP                      |
+| Other            | Python / Node.js / Mosquitto       |
+
 
 ---
